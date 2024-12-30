@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hotelup-information
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotelup-information-deployment
+  labels:
+    app: hotelup-information
+  namespace: hotelup-information
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hotelup-information
+  template:
+    metadata:
+      name: hotelup-information
+      labels:
+        app: hotelup-information
+    spec:
+      containers:
+        - name: hotelup-information
+          image: wiaz/hotelup.information:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5001
+              protocol: TCP
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hotelup-information-service
+  labels:
+    app: hotelup-information
+  namespace: hotelup-information
+spec:
+    selector:
+        app: hotelup-information
+    ports:
+        - protocol: TCP
+          port: 5001
+          targetPort: 5001
+    type: LoadBalancer
+      
