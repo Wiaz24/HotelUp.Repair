@@ -1,7 +1,7 @@
 name: Dockerhub
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
 jobs:
   build:
 
@@ -32,5 +32,5 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: wiaz/hotelup.information:latest
+          tags: wiaz/hotelup.repair:latest
           
