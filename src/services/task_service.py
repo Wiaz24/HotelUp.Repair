@@ -12,7 +12,7 @@ class TaskService:
     def create_task(self, task_data):
         return self.task_repository.create_task(task_data)
     
-    def update_task(self,task_data):
+    def update_task(self, task_data):
         return self.task_repository.update_task(task_data)
     
     def delete_task(self, task_id):

@@ -1,7 +1,7 @@
 from enum import Enum
 
 class RepairType(str, Enum):
-    demage = "demage"
+    damage = "damage"
     malfunction = "malfunction"
     undefined = "undefined"
     not_detected = "not_detected"
@@ -9,4 +9,4 @@ class RepairType(str, Enum):
 class TaskStatus(str, Enum):
     pending = "pending"
     in_progress = "in_progress"
-    done = "cone"
+    done = "done"

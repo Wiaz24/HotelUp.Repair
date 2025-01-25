@@ -2,7 +2,9 @@ from sqlalchemy.orm import Session # type: ignore
 from models.task import Task
 from typing import List
 from datetime import datetime
-from schemas.task import TaskCreate, TaskUpdate
+from schemas.task import TaskCreate, TaskDelete, TaskUpdate
+from schemas.enums import RepairType
+from rabbitmq.rabbitmq_producer import send_message
 
 class TaskRepository:
     def __init__(self, db: Session):
@@ -29,10 +31,23 @@ class TaskRepository:
             task.last_updated = datetime.utcnow()  # Update last_updated field
             self.db.commit()
             self.db.refresh(task)
+            
+            # Check if repair_type is updated to RepairType.damage
+            if task.repair_type == RepairType.damage:
+                message = {
+                    'message': {
+                        'taskId': str(task.id),
+                        'reservationId': str(task.reservation_id),
+                        'repairType': task.repair_type,
+                        'cost': task.damage_repair_cost
+                    }
+                }
+                send_message('HotelUp.Repair:DamageReportedEvent', '', message)
+            
             return task
         return None
     
-    def delete_task(self, task_id):
+    def delete_task(self, task_id: str):
         task = self.db.query(Task).filter(Task.id == task_id).first()
         if task:
             self.db.delete(task)
