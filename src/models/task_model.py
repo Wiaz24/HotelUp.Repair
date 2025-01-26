@@ -5,6 +5,8 @@ from sqlalchemy.ext.declarative import declarative_base # type: ignore
 from sqlalchemy.dialects.postgresql import UUID as SqlUUID # type: ignore
 from datetime import datetime
 from schemas.enums import RepairType, TaskStatus # type: ignore
+from sqlalchemy import ForeignKey # type: ignore
+from sqlalchemy.orm import relationship # type: ignore
 
 Base = declarative_base()
 
@@ -23,3 +25,6 @@ class Task(Base):
     repair_type = Column(String(100), nullable=False, default="undefined")
     status = Column(String(100), nullable=False, default="pending")
     damage_repair_cost = Column(Float, nullable=False, default=0.0)
+    janitor_id = Column(SqlUUID(as_uuid=True), ForeignKey('repair.janitors.id'))
+    janitor = relationship("Janitor", back_populates="tasks")
+    

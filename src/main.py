@@ -1,7 +1,7 @@
 from fastapi import FastAPI # type: ignore
-from routers import task_router
+from routers import repair_router
 from database.database import engine
-from models.task import Base
+from models.task_model import Base
 import sys
 import threading
 from rabbitmq.rabbitmq_consumer import start_consumer
@@ -23,7 +23,7 @@ def check_and_create_tables():
 check_and_create_tables()
 
 # Include routers
-app.include_router(task_router.router)
+app.include_router(repair_router.router)
 
 # Start RabbitMQ consumer
 @app.on_event("startup")

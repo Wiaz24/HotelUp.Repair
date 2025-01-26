@@ -8,7 +8,24 @@ from repositories.task_repository import TaskRepository
 from schemas.task import RepairType, TaskBase, TaskCreate, TaskResponse, TaskUpdate
 
 router = APIRouter()
-# Tasl related routes
+# Janitor related routes
+@router.get("/api/repair/janitors/{janitor_id}/tasks", response_model=List[TaskResponse])
+def get_janitor_tasks(janitor_id: int, db: Session = Depends(get_db)):
+    try:
+        task_repository = TaskRepository(db)
+        task_service = TaskService(task_repository)
+        return task_service.get_janitor_tasks(janitor_id)
+    except ConnectionError:
+        print("Error 503: Service Unavailable")
+        return {"error": "Could not connect to database"}, 503
+    except ValueError as e:
+        print("Error 400: Bad Request")
+        return {"error": f"Invalid value: {str(e)}"}, 400
+    except Exception as e:
+        print("Error 500: Internal Server Error")
+        return {"error": f"Internal server error: {str(e)}"}, 500
+    
+# Task related routes
 @router.get("/api/repair/tasks", response_model=List[TaskResponse])
 def get_tasks(db: Session = Depends(get_db)):
     try:

@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session # type: ignore
-from models.task import Task
+from sqlalchemy import func # type: ignore
+from models.task_model import Task
+from models.janitor_model import Janitor
 from typing import List
 from datetime import datetime
 from schemas.task import TaskCreate, TaskDelete, TaskUpdate
@@ -54,3 +56,4 @@ class TaskRepository:
             self.db.commit()
             return task
         return None
+    
