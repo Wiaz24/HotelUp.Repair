@@ -24,11 +24,10 @@ class TaskService:
         janitor_id = janitor.id if janitor else None
         return self.task_repository.create_task(task_data, janitor_id)
     
-    def update_task(self, task_data):
-        try:
-            return self.task_repository.update_task(task_data)
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
+    def update_task(self, task_data, janitor_id):
+        return self.task_repository.update_task(task_data, janitor_id)
+           
+
     
     def delete_task(self, task_id):
         try:

@@ -15,6 +15,7 @@ class JanitorBase(BaseModel):
         arbitrary_types_allowed = True
 
 class JanitorCreate(BaseModel):
+    id: UUID
     email: str
     role: str
 

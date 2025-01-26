@@ -9,7 +9,6 @@ class JanitorService:
         self.janitor_repository = janitor_repository
 
     def get_tasks_by_janitor_id(self, janitor_id: str):
-        # Fixed: Call repository instead of itself
         return self.janitor_repository.get_tasks_by_janitor_id(janitor_id)
 
     def create_janitor(self, janitor_data):

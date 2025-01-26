@@ -25,29 +25,31 @@ class TaskRepository:
         self.db.refresh(task)
         return task
     
-    def update_task(self, task_data: TaskUpdate):
+    def update_task(self, task_data: TaskUpdate, janitor_id: str):
         task = self.db.query(Task).filter(Task.id == task_data.id).first()
-        if task:
-            update_data = task_data.dict()
-            for key, value in update_data.items():
-                setattr(task, key, value)
-            task.last_updated = datetime.utcnow()  # Update last_updated field
-            self.db.commit()
-            self.db.refresh(task)
-            
-            # Check if repair_type is updated to RepairType.damage
-            if task.repair_type == RepairType.damage:
-                message = {
-                    'message': {
-                        'taskId': str(task.id),
-                        'reservationId': str(task.reservation_id),
-                        'repairType': task.repair_type,
-                        'cost': task.damage_repair_cost
+        # check if task has the same janitor_id
+        if task.janitor_id == janitor_id:
+            if task:
+                update_data = task_data.dict()
+                for key, value in update_data.items():
+                    setattr(task, key, value)
+                task.last_updated = datetime.utcnow()  # Update last_updated field
+                self.db.commit()
+                self.db.refresh(task)
+                
+                # Check if repair_type is updated to RepairType.damage
+                if task.repair_type == RepairType.damage:
+                    message = {
+                        'message': {
+                            'taskId': str(task.id),
+                            'reservationId': str(task.reservation_id),
+                            'repairType': task.repair_type,
+                            'cost': task.damage_repair_cost
+                        }
                     }
-                }
-                send_message('HotelUp.Repair:DamageReportedEvent', '', message)
-            
-            return task
+                    send_message('HotelUp.Repair:DamageReportedEvent', '', message)
+                
+                return task
         return None
     
     def delete_task(self, task_id: str):

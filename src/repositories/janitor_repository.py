@@ -1,4 +1,4 @@
-from http.client import HTTPException
+from fastapi import HTTPException
 from sqlalchemy.orm import Session # type: ignore
 from sqlalchemy import func # type: ignore
 from models.task_model import Task
@@ -14,6 +14,7 @@ class JanitorRepository:
     def get_tasks_by_janitor_id(self, janitor_id: str) -> JanitorResponse:
         janitor = self.db.query(Janitor).filter(Janitor.id == janitor_id).first()
         if not janitor:
+            print(f"Janitor not found with ID: {janitor_id}")
             raise HTTPException(status_code=404, detail="Janitor not found")
         # Initialize empty tasks list if None
         task_schemas = [TaskBase.from_orm(task) for task in (janitor.tasks or [])]

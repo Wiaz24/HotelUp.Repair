@@ -9,6 +9,7 @@ from repositories.janitor_repository import JanitorRepository
 from database.database import get_db
 from schemas.task import TaskCreate
 from schemas.janitor import JanitorCreate
+from uuid import UUID
 
 # Initialize TaskService
 db = get_db()
@@ -27,7 +28,7 @@ def callback(ch, method, properties, body):
     elif exchange == 'HotelUp.Customer:ReservationCanceledEvent':
         delete_task_event(body)
     elif exchange == 'HotelUp.Employee:UserCreatedEvent':
-        pass
+        create_janitor(body)
         
 def create_task_event(body):
     message = json.loads(body)['message']
@@ -62,16 +63,18 @@ def delete_task_event(body):
     
 def create_janitor(body):
     message = json.loads(body)['message']
-    janitor_id = message['employeeId']
+    janitor_id = UUID(message['employeeId'])
     janitor_email = message['employeeEmail']
     role = message['role']
-
+    
     if role != 'janitor':
         return
-    janitor = JanitorCreate(janitor_id=janitor_id, email=janitor_email, role=role)
+    
+    janitor = JanitorCreate(id=janitor_id, email=janitor_email, role=role)
     db = next(get_db())
     janitor_repository = JanitorRepository(db)
     janitor_service = JanitorService(janitor_repository)
+    print(f"Creating janitor: {janitor}")
     janitor_service.create_janitor(janitor)
     
 def consume():
