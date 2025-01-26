@@ -6,6 +6,12 @@ This service should expose endpoints on port `5001` starting with:
 /api/repair/
 ```
 
+```http
+/api/repair/repair_list
+```
+
+Nasłuchiwanie na event od janitora
+
 ## Healthchecks
 Health status of the service should be available at:
 ```http
