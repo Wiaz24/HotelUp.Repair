@@ -17,6 +17,9 @@ class TaskBase(BaseModel):
     damage_repair_cost: float
     title: str
     deadline: datetime
+    janitor_id: Optional[str] = None
+    class Config:
+        from_attributes = True
   
 class TaskCreate(BaseModel):
     title: str
@@ -46,6 +49,11 @@ class TaskResponse(BaseModel):
     damage_repair_cost: float
     title: str
     deadline: datetime
+    janitor_id: Optional[UUID] = None
+    
+    class Config:
+        orm_mode = True
+        from_attributes = True
     
 class TaskDelete(BaseModel):
     id: UUID

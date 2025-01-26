@@ -6,9 +6,25 @@ from enum import Enum
 from uuid import UUID
 from schemas.task import TaskBase
    
-class Janitor(BaseModel):
-    janitor_id: UUID
-    tasks: List[TaskBase]
+class JanitorBase(BaseModel):
+    id: UUID
+    tasks: List[TaskBase] = []
+    
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True
 
-class Config:
-    from_attributes = True
+class JanitorCreate(BaseModel):
+    email: str
+    role: str
+
+    class Config:
+        from_attributes = True
+        
+class JanitorResponse(BaseModel):
+    id: UUID
+    tasks: List[TaskBase] = []
+
+    class Config:
+        from_attributes = True
+        arbitrary_types_allowed = True

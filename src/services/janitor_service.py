@@ -1,10 +1,20 @@
-from repositories.task_repository import TaskRepository
+from http.client import HTTPException
+from repositories.janitor_repository import JanitorRepository
 from models.task_model import Task
-from typing import List
+from schemas.janitor import JanitorResponse
+from typing import List, Optional
 
 class JanitorService:
-    def __init__(self, task_repository: TaskRepository):
-        self.task_repository = task_repository
+    def __init__(self, janitor_repository: JanitorRepository):
+        self.janitor_repository = janitor_repository
+
+    def get_tasks_by_janitor_id(self, janitor_id: str):
+        # Fixed: Call repository instead of itself
+        return self.janitor_repository.get_tasks_by_janitor_id(janitor_id)
+
+    def create_janitor(self, janitor_data):
+        return self.janitor_repository.create_janitor(janitor_data)
     
-    def get_janitor_tasks(self, janitor_id: str) -> List[Task]:
-        return self.task_repository.get_janitor_tasks(janitor_id)
+    def get_janitor_list(self):
+        return self.janitor_repository.get_janitor_list()
+    

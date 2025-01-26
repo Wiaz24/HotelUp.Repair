@@ -3,14 +3,20 @@ import json
 import pika # type: ignore
 import threading
 from services.task_service import TaskService
+from services.janitor_service import JanitorService
 from repositories.task_repository import TaskRepository
+from repositories.janitor_repository import JanitorRepository
 from database.database import get_db
 from schemas.task import TaskCreate
+from schemas.janitor import JanitorCreate
 
 # Initialize TaskService
 db = get_db()
 task_repository = TaskRepository(db)
-task_service = TaskService(task_repository)
+janitor_repository = JanitorRepository(db)
+janitor_service = JanitorService(janitor_repository)
+task_service = TaskService(task_repository, janitor_repository)
+
 
 def callback(ch, method, properties, body):
     exchange = method.exchange
@@ -20,6 +26,8 @@ def callback(ch, method, properties, body):
         create_task_event(body)
     elif exchange == 'HotelUp.Customer:ReservationCanceledEvent':
         delete_task_event(body)
+    elif exchange == 'HotelUp.Employee:UserCreatedEvent':
+        pass
         
 def create_task_event(body):
     message = json.loads(body)['message']
@@ -27,6 +35,11 @@ def create_task_event(body):
     start_date = datetime.strptime(message['startDate'], '%Y-%m-%dT%H:%M:%SZ').date()
     rooms = message['rooms']
     
+    db = next(get_db())
+    task_repository = TaskRepository(db)
+    janitor_repository = JanitorRepository(db)
+    task_service = TaskService(task_repository, janitor_repository)
+        
     for room in rooms:
         task_for_room = TaskCreate(
             title='Cyclic room check task',
@@ -35,18 +48,31 @@ def create_task_event(body):
             room_number=room['id'],
             deadline=start_date
         )
-        db = next(get_db())
-        task_repository = TaskRepository(db)
-        task_service = TaskService(task_repository)
         task_service.create_task(task_for_room)
+
 
 def delete_task_event(body):
     message = json.loads(body)['message']
     reservation_id = message['reservationId']
     db = next(get_db())
     task_repository = TaskRepository(db)
-    task_service = TaskService(task_repository)
+    janitor_repository = JanitorRepository(db)
+    task_service = TaskService(task_repository, janitor_repository)
     task_service.delete_task(reservation_id)
+    
+def create_janitor(body):
+    message = json.loads(body)['message']
+    janitor_id = message['employeeId']
+    janitor_email = message['employeeEmail']
+    role = message['role']
+
+    if role != 'janitor':
+        return
+    janitor = JanitorCreate(janitor_id=janitor_id, email=janitor_email, role=role)
+    db = next(get_db())
+    janitor_repository = JanitorRepository(db)
+    janitor_service = JanitorService(janitor_repository)
+    janitor_service.create_janitor(janitor)
     
 def consume():
     try:
@@ -59,7 +85,7 @@ def consume():
     channel = connection.channel()
     
     # Declare the exchanges
-    exchange_names = ['HotelUp.Customer:ReservationCreatedEvent', 'HotelUp.Customer:ReservationCanceledEvent']
+    exchange_names = ['HotelUp.Customer:ReservationCreatedEvent', 'HotelUp.Customer:ReservationCanceledEvent', 'HotelUp.Employee:UserCreatedEvent']
     for exchange_name in exchange_names:
         channel.exchange_declare(exchange=exchange_name, exchange_type='fanout', durable=True)
         print(f"Declared exchange {exchange_name}")

@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from sqlalchemy.orm import Session # type: ignore
 from sqlalchemy import func # type: ignore
 from models.task_model import Task
@@ -15,10 +16,10 @@ class TaskRepository:
     def get_all_tasks(self) -> List[Task]:
         return self.db.query(Task).all()
     
-    def create_task(self, task_data: TaskCreate):
+    def create_task(self, task_data: TaskCreate, janitor_id: str):
         task_dict = task_data.dict()
         current_time = datetime.utcnow()
-        task = Task(**task_dict, created_at=current_time, last_updated=current_time)
+        task = Task(**task_dict, created_at=current_time, last_updated=current_time, janitor_id=janitor_id)
         self.db.add(task)
         self.db.commit()
         self.db.refresh(task)
@@ -57,3 +58,31 @@ class TaskRepository:
             return task
         return None
     
+    def get_unassigned_tasks(self) -> List[Task]:
+        return self.db.query(Task)\
+            .filter(Task.janitor_id == None)\
+            .all()
+    
+    def claim_task(self, janitor_id: str, task_id: str) -> Task:
+        task = self.db.query(Task)\
+            .filter(Task.id == task_id)\
+            .filter(Task.janitor_id.is_(None))\
+            .first()
+        
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found or already claimed")
+            
+        janitor = self.db.query(Janitor)\
+            .filter(Janitor.id == janitor_id)\
+            .first()
+            
+        if not janitor:
+            raise HTTPException(status_code=404, detail="Janitor not found")
+            
+        task.janitor_id = janitor_id
+        task.last_updated = datetime.utcnow()
+        
+        self.db.commit()
+        self.db.refresh(task)
+        
+        return task
