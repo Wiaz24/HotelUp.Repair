@@ -11,6 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2AuthorizationCodeBearer
 import requests
 from open_id_connect import OpenIdConnect
 from env import settings
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(
     title="HotelUp Repair Service",
@@ -29,6 +30,17 @@ app = FastAPI(
     redoc_url="/api/repair/redoc",
     swagger_ui_oauth2_redirect_url="/api/repair/swagger/oauth2-redirect.html"
 )
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 print("oauth2 {}", app.swagger_ui_oauth2_redirect_url)
 
 app.include_router(task_router.router)

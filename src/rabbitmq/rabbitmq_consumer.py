@@ -10,6 +10,7 @@ from database.database import get_db
 from schemas.task import TaskCreate
 from schemas.janitor import JanitorCreate
 from uuid import UUID
+from env import settings
 
 # Initialize TaskService
 db = get_db()
@@ -79,7 +80,7 @@ def create_janitor(body):
     
 def consume():
     try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', port=5672))
+        connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST, port=5672))
         print("Connection established successfully.")
     except pika.exceptions.AMQPConnectionError as e:
         print(f"Failed to establish connection: {e}")
