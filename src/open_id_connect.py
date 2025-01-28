@@ -3,11 +3,12 @@ from fastapi import Security, HTTPException, Depends
 from starlette.status import HTTP_403_FORBIDDEN
 from typing import Optional, List
 import jwt
-from jwt.exceptions import PyJWTError
+from jose import JWTError as PyJWTError  # Update this line
+from env import settings
 
 # Initialize OpenID Connect
 oauth2_scheme = OpenIdConnect(
-    openIdConnectUrl=f"https://cognito-idp.us-east-1.amazonaws.com/us-east-1_m6K9nuUJX/.well-known/openid-configuration",
+    openIdConnectUrl=settings.OAUTH2_METADATA_URL,
     auto_error=True
 )
 
