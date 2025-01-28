@@ -9,9 +9,7 @@ COPY requirements.txt .
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt \
-    && pip install PyJWT==2.8.0 \
-    && pip uninstall -y jwt \
-    && pip install python-jose
+    && pip install PyJWT==2.8.0 python-jose
 
 # Copy the rest of the application
 COPY . .

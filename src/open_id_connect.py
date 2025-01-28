@@ -3,8 +3,13 @@ from fastapi import Security, HTTPException, Depends
 from starlette.status import HTTP_403_FORBIDDEN
 from typing import Optional, List
 import jwt
-from jose import JWTError as PyJWTError  # Update this line
+from jwt.exceptions import PyJWTError
 from env import settings
+
+try:
+    from jwt import PyJWTError
+except ImportError:
+    from jwt.exceptions import PyJWTError
 
 # Initialize OpenID Connect
 oauth2_scheme = OpenIdConnect(
