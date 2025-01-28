@@ -9,7 +9,7 @@ from repositories.janitor_repository import JanitorRepository
 from database.database import get_db
 from schemas.task import TaskCreate
 from schemas.janitor import JanitorCreate
-from uuid import UUID
+import uuid
 from env import settings
 
 # Initialize TaskService
@@ -64,14 +64,14 @@ def delete_task_event(body):
     
 def create_janitor(body):
     message = json.loads(body)['message']
-    janitor_id = UUID(message['employeeId'])
+    janitor_id = message['employeeId']
     janitor_email = message['employeeEmail']
     role = message['role']
     
     if role != 'janitor':
         return
     
-    janitor = JanitorCreate(id=janitor_id, email=janitor_email, role=role)
+    janitor = JanitorCreate(id=uuid.UUID(janitor_id), email=janitor_email, role=role)
     db = next(get_db())
     janitor_repository = JanitorRepository(db)
     janitor_service = JanitorService(janitor_repository)
