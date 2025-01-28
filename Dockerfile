@@ -21,4 +21,4 @@ ENV PYTHONPATH=/app
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python", "src/app/main.py"]
+CMD ["python", "src/main.py"]
