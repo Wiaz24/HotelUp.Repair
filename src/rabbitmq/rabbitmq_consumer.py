@@ -31,7 +31,7 @@ def callback(ch, method, properties, body):
         create_task_event(body)
     elif exchange == 'HotelUp.Customer:ReservationCanceledEvent':
         delete_task_event(body)
-    elif exchange == 'HotelUp.Employee:UserCreatedEvent':
+    elif exchange == 'HotelUp.Employee:EmployeeCreatedEvent':
         create_janitor(body)
         
 def create_task_event(body):
@@ -122,7 +122,7 @@ def consume():
     channel = connection.channel()
     
     # Declare the exchanges
-    exchange_names = ['HotelUp.Customer:ReservationCreatedEvent', 'HotelUp.Customer:ReservationCanceledEvent', 'HotelUp.Employee:UserCreatedEvent']
+    exchange_names = ['HotelUp.Customer:ReservationCreatedEvent', 'HotelUp.Customer:ReservationCanceledEvent', 'HotelUp.Employee:EmployeeCreatedEvent']
     for exchange_name in exchange_names:
         channel.exchange_declare(exchange=exchange_name, exchange_type='fanout', durable=True)
         print(f"Declared exchange {exchange_name}")
