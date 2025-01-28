@@ -12,6 +12,7 @@ from schemas.task import RepairType, TaskBase, TaskCreate, TaskResponse, TaskUpd
 from schemas.janitor import JanitorCreate, JanitorBase, JanitorResponse
 from jose import JWTError, jwt
 from open_id_connect import requires_role
+from uuid import UUID
 
 router = APIRouter()
 
@@ -82,7 +83,7 @@ def update_task(
         if "Admins" in user.get("roles", []):
             result = task_service.update_task(task, None)
         else:
-            janitor_id = user["sub"]  # Extract janitor ID from token
+            janitor_id = UUID(user["sub"])  # Extract janitor ID from token
             if not janitor_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -127,7 +128,7 @@ def get_unassigned_tasks(
         if "Admins" in user.get("roles", []):
             return task_repository.get_unassigned_tasks()
         else:
-            janitor_id = user["sub"]  # Extract janitor ID from token
+            janitor_id = UUID(user["sub"])  # Extract janitor ID from token
             if not janitor_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -144,7 +145,7 @@ def get_unassigned_tasks(
 
 @router.put("/tasks/{task_id}/claim", response_model=TaskResponse, tags=["Tasks"])
 def claim_task(
-    task_id: str, 
+    task_id: UUID, 
     db: Session = Depends(get_db),
     user: dict = Depends(requires_role(["Admins", "Janitors"]))
 ):
@@ -152,7 +153,7 @@ def claim_task(
         if "Admins" in user.get("roles", []):
             return task_repository.claim_task(None, task_id)
         else:
-            janitor_id = user["sub"]  # Extract janitor ID from token
+            janitor_id = UUID(user["sub"])  # Extract janitor ID from token
             if not janitor_id:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,

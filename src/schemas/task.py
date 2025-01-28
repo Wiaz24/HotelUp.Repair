@@ -17,7 +17,7 @@ class TaskBase(BaseModel):
     damage_repair_cost: float
     title: str
     deadline: datetime
-    janitor_id: Optional[str] = None
+    janitor_id: Optional[UUID] = None
     class Config:
         from_attributes = True
   

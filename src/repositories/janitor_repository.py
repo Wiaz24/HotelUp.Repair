@@ -6,12 +6,12 @@ from models.janitor_model import Janitor
 from typing import List, Optional   
 from schemas.janitor import JanitorCreate, JanitorResponse
 from schemas.task import TaskBase
-
+from uuid import UUID
 class JanitorRepository:
     def __init__(self, db: Session):
         self.db = db
     
-    def get_tasks_by_janitor_id(self, janitor_id: str) -> JanitorResponse:
+    def get_tasks_by_janitor_id(self, janitor_id: UUID) -> JanitorResponse:
         janitor = self.db.query(Janitor).filter(Janitor.id == janitor_id).first()
         if not janitor:
             print(f"Janitor not found with ID: {janitor_id}")

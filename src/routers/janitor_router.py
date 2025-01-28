@@ -7,6 +7,7 @@ from repositories.janitor_repository import JanitorRepository
 from schemas.janitor import JanitorCreate, JanitorBase, JanitorResponse
 from schemas.task import TaskResponse
 from open_id_connect import requires_role
+from uuid import UUID
 
 router = APIRouter(
     prefix="/api/repair",
@@ -21,7 +22,7 @@ def get_tasks_by_janitor_id(
     user: dict = Depends(requires_role(["Admins", "Janitors"]))
 ):
     try:
-        janitor_id = user["sub"]  # Extract janitor ID from token
+        janitor_id = UUID(user["sub"])  # Extract janitor ID from token
         if not janitor_id:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

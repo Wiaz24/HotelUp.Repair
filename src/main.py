@@ -41,8 +41,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-print("oauth2 {}", app.swagger_ui_oauth2_redirect_url)
-
 app.include_router(task_router.router)
 app.include_router(janitor_router.router)
 app.include_router(health_router.router)

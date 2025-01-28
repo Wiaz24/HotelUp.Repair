@@ -14,7 +14,7 @@ class Janitor(Base):
     __tablename__ = "janitors"
     __table_args__ = {'schema': 'repair'}
     
-    id = Column(String, primary_key=True, default=lambda: str(uuid4()), nullable=False)
+    id = Column(SqlUUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
     role = Column(String, nullable=False)
     tasks = relationship("Task", back_populates="janitor")

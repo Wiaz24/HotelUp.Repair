@@ -11,6 +11,9 @@ from schemas.task import TaskCreate
 from schemas.janitor import JanitorCreate
 import uuid
 from env import settings
+import time
+import logging
+from typing import Optional
 
 # Initialize TaskService
 db = get_db()
@@ -60,7 +63,9 @@ def delete_task_event(body):
     task_repository = TaskRepository(db)
     janitor_repository = JanitorRepository(db)
     task_service = TaskService(task_repository, janitor_repository)
+    logging.info(f"Deleting task for reservation ID: {reservation_id}")
     task_service.delete_task(reservation_id)
+    logging.info(f"Task for reservation ID {reservation_id} deleted")
     
 def create_janitor(body):
     message = json.loads(body)['message']
@@ -77,8 +82,36 @@ def create_janitor(body):
     janitor_service = JanitorService(janitor_repository)
     print(f"Creating janitor: {janitor}")
     janitor_service.create_janitor(janitor)
-    
+
+def connect_with_retry(max_retries: int = 5, initial_delay: float = 1.0) -> Optional[pika.BlockingConnection]:
+    delay = initial_delay
+    for attempt in range(max_retries):
+        try:
+            connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=settings.RABBITMQ_HOST, 
+                    port=5672,
+                    connection_attempts=3,
+                    retry_delay=2
+                )
+            )
+            logging.info("RabbitMQ connection established successfully")
+            return connection
+        except pika.exceptions.AMQPConnectionError as e:
+            if attempt == max_retries - 1:
+                logging.error(f"Failed to establish RabbitMQ connection after {max_retries} attempts: {e}")
+                return None
+            logging.warning(f"Connection attempt {attempt + 1} failed, retrying in {delay}s...")
+            time.sleep(delay)
+            delay *= 2  # Exponential backoff
+    return None
+
 def consume():
+    connection = connect_with_retry()
+    if not connection:
+        logging.error("Failed to establish connection")
+        return
+    
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST, port=5672))
         print("Connection established successfully.")

@@ -24,7 +24,7 @@ class Task(Base):
     repair_type = Column(String(100), nullable=False, default="undefined")
     status = Column(String(100), nullable=False, default="pending")
     damage_repair_cost = Column(Float, nullable=False, default=0.0)
-    janitor_id = Column(String, ForeignKey('repair.janitors.id'))
+    janitor_id = Column(SqlUUID(as_uuid=True), ForeignKey('repair.janitors.id'))
     janitor = relationship("Janitor", back_populates="tasks")
     
     

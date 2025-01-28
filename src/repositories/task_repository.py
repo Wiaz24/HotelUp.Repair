@@ -8,6 +8,7 @@ from datetime import datetime
 from schemas.task import TaskCreate, TaskDelete, TaskUpdate
 from schemas.enums import RepairType
 from rabbitmq.rabbitmq_producer import send_message
+from uuid import UUID
 
 class TaskRepository:
     def __init__(self, db: Session):
@@ -25,35 +26,33 @@ class TaskRepository:
         self.db.refresh(task)
         return task
     
-    def update_task(self, task_data: TaskUpdate, janitor_id: str):
+    def update_task(self, task_data: TaskUpdate, janitor_id: UUID):
         task = self.db.query(Task).filter(Task.id == task_data.id).first()
-        # check if task has the same janitor_id
-        if task.janitor_id == janitor_id:
-            if task:
-                update_data = task_data.dict()
-                for key, value in update_data.items():
-                    setattr(task, key, value)
-                task.last_updated = datetime.utcnow()  # Update last_updated field
-                self.db.commit()
-                self.db.refresh(task)
-                
-                # Check if repair_type is updated to RepairType.damage
-                if task.repair_type == RepairType.damage:
-                    message = {
-                        'message': {
-                            'taskId': str(task.id),
-                            'reservationId': str(task.reservation_id),
-                            'repairType': task.repair_type,
-                            'cost': task.damage_repair_cost
-                        }
+        if task and task.janitor_id == janitor_id:
+            update_data = task_data.dict()
+            update_data.pop('id', None)  # Remove id from update data
+            for key, value in update_data.items():
+                setattr(task, key, value)
+            task.last_updated = datetime.utcnow()
+            self.db.commit()
+            self.db.refresh(task)
+            
+            if task.repair_type == RepairType.damage:
+                message = {
+                    'message': {
+                        'taskId': str(task.id),  # Already UUID
+                        'reservationId': str(task.reservation_id),  # Already UUID
+                        'repairType': task.repair_type,
+                        'cost': task.damage_repair_cost
                     }
-                    send_message('HotelUp.Repair:DamageReportedEvent', '', message)
-                
-                return task
+                }
+                send_message('HotelUp.Repair:DamageReportedEvent', '', message)
+            
+            return task
         return None
     
-    def delete_task(self, task_id: str):
-        task = self.db.query(Task).filter(Task.id == task_id).first()
+    def delete_task(self, reservation_id: UUID):
+        task = self.db.query(Task).filter(Task.reservation_id == reservation_id).first()
         if task:
             self.db.delete(task)
             self.db.commit()
