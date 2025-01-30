@@ -45,6 +45,16 @@ spec:
                             key: POSTGRES_DB
                   - name: RABBITMQ_HOST
                     value: rabbitmq-cluster
+                  - name: RABBITMQ_USER
+                    valueFrom:
+                        secretKeyRef:
+                            name: repair-secret
+                            key: RABBITMQ_USER
+                  - name: RABBITMQ_PASSWORD
+                    valueFrom:
+                        secretKeyRef:
+                            name: repair-secret
+                            key: RABBITMQ_PASSWORD
                 ports:
                   - containerPort: 5001
                     protocol: TCP

@@ -90,6 +90,7 @@ def connect_with_retry(max_retries: int = 5, initial_delay: float = 1.0) -> Opti
             connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
                     host=settings.RABBITMQ_HOST, 
+                    credentials=pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASSWORD),
                     port=5672,
                     connection_attempts=3,
                     retry_delay=2

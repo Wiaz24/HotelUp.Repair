@@ -7,6 +7,8 @@ class Settings(BaseSettings):
     OAUTH2_METADATA_URL: str
     POSTGRES_DB: str
     RABBITMQ_HOST: str
+    RABBITMQ_USER: str
+    RABBITMQ_PASSWORD: str
 
     class Config:
         env_file = None if os.getenv('HOSTING_ENVIRONMENT') == 'Production' else '.env'

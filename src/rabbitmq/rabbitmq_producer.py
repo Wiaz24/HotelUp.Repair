@@ -3,7 +3,10 @@ import json
 from env import settings
 
 def send_message(exchange_name, routing_key, message):
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST, port=5672))
+    connection = pika.BlockingConnection(pika.ConnectionParameters(
+        host=settings.RABBITMQ_HOST, 
+        credentials=pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASSWORD),
+        port=5672))
     channel = connection.channel()
 
     # Declare the exchange
