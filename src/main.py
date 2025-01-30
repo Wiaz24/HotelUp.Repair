@@ -28,7 +28,8 @@ app = FastAPI(
     },
     docs_url="/api/repair/swagger",
     redoc_url="/api/repair/redoc",
-    swagger_ui_oauth2_redirect_url="/api/repair/swagger/oauth2-redirect.html"
+    swagger_ui_oauth2_redirect_url="/api/repair/swagger/oauth2-redirect.html",
+    openapi_url="/api/repair/openapi.json",
 )
 
 origins = ["*"]
