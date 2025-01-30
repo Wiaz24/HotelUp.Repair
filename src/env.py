@@ -9,7 +9,6 @@ class Settings(BaseSettings):
     RABBITMQ_HOST: str
     RABBITMQ_USER: str
     RABBITMQ_PASSWORD: str
-
     class Config:
         env_file = None if os.getenv('HOSTING_ENVIRONMENT') == 'Production' else '.env'
 

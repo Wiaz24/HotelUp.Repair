@@ -83,17 +83,29 @@ def create_janitor(body):
     print(f"Creating janitor: {janitor}")
     janitor_service.create_janitor(janitor)
 
-def connect_with_retry(max_retries: int = 5, initial_delay: float = 1.0) -> Optional[pika.BlockingConnection]:
-    delay = initial_delay
+def connect_with_retry(max_retries=3):
+    delay = 1
+    credentials = pika.PlainCredentials(
+        username=settings.RABBITMQ_USER,
+        password=settings.RABBITMQ_PASSWORD
+    )
+    
+    client_properties = {
+        'connection_name': 'hotelup-repair-service',
+        'application': 'HotelUp Repair Service'
+    }
+    
     for attempt in range(max_retries):
         try:
             connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
-                    host=settings.RABBITMQ_HOST, 
-                    credentials=pika.PlainCredentials(settings.RABBITMQ_USER, settings.RABBITMQ_PASSWORD),
+                    host=settings.RABBITMQ_HOST,
                     port=5672,
+                    credentials=credentials,
+                    virtual_host='/',
                     connection_attempts=3,
-                    retry_delay=2
+                    retry_delay=2,
+                    client_properties=client_properties
                 )
             )
             logging.info("RabbitMQ connection established successfully")
@@ -104,7 +116,7 @@ def connect_with_retry(max_retries: int = 5, initial_delay: float = 1.0) -> Opti
                 return None
             logging.warning(f"Connection attempt {attempt + 1} failed, retrying in {delay}s...")
             time.sleep(delay)
-            delay *= 2  # Exponential backoff
+            delay *= 2
     return None
 
 def consume():
@@ -113,20 +125,15 @@ def consume():
         logging.error("Failed to establish connection")
         return
     
-    try:
-        connection = pika.BlockingConnection(pika.ConnectionParameters(host=settings.RABBITMQ_HOST, port=5672))
-        print("Connection established successfully.")
-    except pika.exceptions.AMQPConnectionError as e:
-        print(f"Failed to establish connection: {e}")
-        return
-
     channel = connection.channel()
     
     # Declare the exchanges
-    exchange_names = ['HotelUp.Customer:ReservationCreatedEvent', 'HotelUp.Customer:ReservationCanceledEvent', 'HotelUp.Employee:EmployeeCreatedEvent']
+    exchange_names = ['HotelUp.Customer:ReservationCreatedEvent', 
+                     'HotelUp.Customer:ReservationCanceledEvent', 
+                     'HotelUp.Employee:EmployeeCreatedEvent']
     for exchange_name in exchange_names:
         channel.exchange_declare(exchange=exchange_name, exchange_type='fanout', durable=True)
-        print(f"Declared exchange {exchange_name}")
+        logging.info(f"Declared exchange {exchange_name}")
     
     # Declare the queue
     queue_name = 'HotelUp.RepairTask:Queue'
